@@ -35,7 +35,7 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
     };
 
     const onTouchMove = (e) => {
-      e.prevetDefault();
+      e.preventDefault();
 
       if(!groupRef.current) return;
 
@@ -69,8 +69,9 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
           const minDistance = 2;
           const maxDistance = 10;
 
-          const directionToTarget = camera.position
-          .clone().sub(new THREE.Vector3(0, 0, 0));
+          const target = controlsRef.current.target;
+
+          const directionToTarget = camera.position.clone().sub(target);
           const currentDistance = directionToTarget.length();
 
           const newDistance = THREE.MathUtils.clamp(
@@ -80,8 +81,8 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
           );
 
           directionToTarget.normalize().multiplyScalar(newDistance);
-          camera.position.copy(directionToTarget);
-          camera.lookAt(0, 0, 0);
+          camera.position.copy(target.clone().add(directionToTarget));
+          camera.lookAt(target);
           controlsRef.current.update();
           // camera.position.z -= delta * 0.01;
           // const direction = new THREE.Vector3();
@@ -105,7 +106,7 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
       lastDistance.current = null;
     };
     window.addEventListener('touchstart', onTouchStart);
-    window.addEventListener('touchmove', onTouchMove);
+    window.addEventListener('touchmove', onTouchMove, {passive:false});
     window.addEventListener('touchend', onTouchEnd);
 
     return () => {
