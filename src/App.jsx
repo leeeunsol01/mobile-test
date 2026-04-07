@@ -12,6 +12,7 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
   const prevMouse = useRef([0, 0]);
   const prevTouch = useRef([0, 0]);
   const lastDistance = useRef(null);
+  const touchMode = useRef(null);
 
   const getDistance = ([t1, t2]) => {
     const dx = t1.clientX - t2.clientX;
@@ -20,18 +21,23 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
   } 
 
   useEffect(() => {
-
     const onTouchStart = (e) => {
-      if(e.touches.length === 1){
+      if (e.touches.length === 1) {
+        touchMode.current = 'rotate'; // 🔥 추가
         const touch = e.touches[0];
         prevTouch.current = [touch.clientX, touch.clientY];
+      }
+
+      if (e.touches.length === 2) {
+        touchMode.current = 'zoom'; // 🔥 추가
+        lastDistance.current = getDistance(e.touches);
       }
     };
 
     const onTouchMove = (e) => {
       if(!groupRef.current) return;
 
-      if(e.touches.length === 1){
+      if(touchMode.current === 'rotate' && e.touches.length === 1){
         const touch = e.touches[0];
 
         const dx = touch.clientX - prevTouch.current[0];
@@ -50,7 +56,7 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
         controlsRef.current.update();
       }
 
-      if(e.touches.length === 2){
+      if(touchMode.current === 'zoom' && e.touches.length === 2){
         const distance = getDistance(e.touches);
 
         if(lastDistance.current !== null){
@@ -64,16 +70,17 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
           const move = direction.clone().multiplyScalar(-delta * 0.01);
           // 카메라 이동
           camera.position.add(move);
-          camera.position.clampLength(2, 10);
-          controlsRef.current.target.clampLength(0, 5);
+          // camera.position.clampLength(2, 10);
+          // controlsRef.current.target.clampLength(0, 5);
           // target도 같이 이동
-          controlsRef.current.target.add(move);
+          // controlsRef.current.target.add(move);
           controlsRef.current.update();
         }
         lastDistance.current = distance;
       }
     };
     const onTouchEnd = () => {
+      touchMode.current = null;
       lastDistance.current = null;
     };
     window.addEventListener('touchstart', onTouchStart);
