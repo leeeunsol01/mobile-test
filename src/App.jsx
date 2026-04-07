@@ -48,8 +48,8 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
         groupRef.current.rotation.y += dx * 0.005;
         // groupRef.current.rotation.x += dy * 0.005;
         const newX = groupRef.current.rotation.x + dy * 0.005;
-        const max = Math.PI / 2 - 0.1;
-        const min = Math.PI / 2 + 0.1;
+        const max = Math.PI / 3;
+        const min = -Math.PI / 3;
 
         groupRef.current.rotation.x = Math.max(min, Math.min(max, newX));
 
@@ -62,19 +62,36 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
         if(lastDistance.current !== null){
           const delta = distance - lastDistance.current;
 
-          // camera.position.z -= delta * 0.01;
-          const direction = new THREE.Vector3();
-          camera.getWorldDirection(direction);
-          direction.multiplyScalar(-1);
+          const minDistance = 2;
+          const maxDistance = 10;
 
-          const move = direction.clone().multiplyScalar(-delta * 0.01);
-          // 카메라 이동
-          camera.position.add(move);
-          // camera.position.clampLength(2, 10);
-          // controlsRef.current.target.clampLength(0, 5);
-          // target도 같이 이동
-          // controlsRef.current.target.add(move);
+          const directionToTarget = camera.position
+          .clone().sub(new THREE.Vector3(0, 0, 0));
+          const currentDistance = directionToTarget.length();
+
+          const newDistance = THREE.MathUtils.clamp(
+            currentDistance - delta * 0.005,
+            minDistance,
+            maxDistance
+          );
+
+          directionToTarget.normalize().multiplyScalar(newDistance);
+          camera.position.copy(directionToTarget);
+          camera.lookAt(0, 0, 0);
           controlsRef.current.update();
+          // camera.position.z -= delta * 0.01;
+          // const direction = new THREE.Vector3();
+          // camera.getWorldDirection(direction);
+          // direction.multiplyScalar(-1);
+
+          // const move = direction.clone().multiplyScalar(-delta * 0.01);
+          // // 카메라 이동
+          // camera.position.add(move);
+          // // camera.position.clampLength(2, 10);
+          // // controlsRef.current.target.clampLength(0, 5);
+          // // target도 같이 이동
+          // // controlsRef.current.target.add(move);
+          // controlsRef.current.update();
         }
         lastDistance.current = distance;
       }
@@ -418,13 +435,13 @@ export default function App() {
           isHideMode={isHideMode}
         />
 
-        <OrbitControls
+        {/* <OrbitControls
           ref={controlsRef}
           enableDamping={false}
           enableRotate={false}
           enablePan={!IsMobile}
           enableZoom={!IsMobile}
-        />
+        /> */}
       </Canvas>
 
       {!isCapture && (
