@@ -35,23 +35,25 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
     };
 
     const onTouchMove = (e) => {
+      e.prevetDefault();
+
       if(!groupRef.current) return;
 
       if(touchMode.current === 'rotate' && e.touches.length === 1){
         const touch = e.touches[0];
 
         const dx = touch.clientX - prevTouch.current[0];
-        const dy = touch.clientY - prevTouch.current[1];
+        // const dy = touch.clientY - prevTouch.current[1];
 
         prevTouch.current = [touch.clientX, touch.clientY];
 
-        groupRef.current.rotation.y += dx * 0.005;
+        groupRef.current.rotation.y += dx * 0.01;
         // groupRef.current.rotation.x += dy * 0.005;
-        const newX = groupRef.current.rotation.x + dy * 0.005;
-        const max = Math.PI / 3;
-        const min = -Math.PI / 3;
+        // const newX = groupRef.current.rotation.x + dy * 0.01;
+        // const max = Math.PI / 3;
+        // const min = -Math.PI / 3;
 
-        groupRef.current.rotation.x = Math.max(min, Math.min(max, newX));
+        // groupRef.current.rotation.x = Math.max(min, Math.min(max, newX));
 
         controlsRef.current.update();
       }
@@ -61,6 +63,8 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
 
         if(lastDistance.current !== null){
           const delta = distance - lastDistance.current;
+
+          if(Math.abs(delta) < 2) return;
 
           const minDistance = 2;
           const maxDistance = 10;
