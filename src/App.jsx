@@ -64,7 +64,7 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
         if(lastDistance.current !== null){
           const delta = distance - lastDistance.current;
 
-          if(Math.abs(delta) < 2) return;
+          // if(Math.abs(delta) < 2) return;
 
           const minDistance = 2;
           const maxDistance = 10;
@@ -82,7 +82,6 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
 
           directionToTarget.normalize().multiplyScalar(newDistance);
           camera.position.copy(target.clone().add(directionToTarget));
-          camera.lookAt(target);
           controlsRef.current.update();
           // camera.position.z -= delta * 0.01;
           // const direction = new THREE.Vector3();
@@ -440,13 +439,11 @@ export default function App() {
           isHideMode={isHideMode}
         />
 
-        {/* <OrbitControls
+        <OrbitControls
           ref={controlsRef}
-          enableDamping={false}
           enableRotate={false}
-          enablePan={!IsMobile}
-          enableZoom={!IsMobile}
-        /> */}
+          enablePan={false}
+        />
       </Canvas>
 
       {!isCapture && (
