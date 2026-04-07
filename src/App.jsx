@@ -5,7 +5,7 @@ import gsap from 'gsap';
 import * as THREE from 'three';
 
 function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, setHiddenMesh, groupRef, isHideMode, hiddenMesh }) {
-  const { scene } = useGLTF('/xr_anatomy.glb');
+  const { scene } = useGLTF(import.meta.env.BASE_URL + 'xr_anatomy.glb');
   const { camera } = useThree();
 
   const isDraggng = useRef(false);
@@ -40,7 +40,14 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
         prevTouch.current = [touch.clientX, touch.clientY];
 
         groupRef.current.rotation.y += dx * 0.005;
-        groupRef.current.rotation.x += dy * 0.005;
+        // groupRef.current.rotation.x += dy * 0.005;
+        const newX = groupRef.current.rotation.x + dy * 0.005;
+        const max = Math.PI / 2 - 0.1;
+        const min = Math.PI / 2 + 0.1;
+
+        groupRef.current.rotation.x = Math.max(min, Math.min(max, newX));
+
+        controlsRef.current.update();
       }
 
       if(e.touches.length === 2){
@@ -49,7 +56,19 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
         if(lastDistance.current !== null){
           const delta = distance - lastDistance.current;
 
-          camera.position.z -= delta * 0.01;
+          // camera.position.z -= delta * 0.01;
+          const direction = new THREE.Vector3();
+          camera.getWorldDirection(direction);
+          direction.multiplyScalar(-1);
+
+          const move = direction.clone().multiplyScalar(-delta * 0.01);
+          // 카메라 이동
+          camera.position.add(move);
+          camera.position.clampLength(2, 10);
+          controlsRef.current.target.clampLength(0, 5);
+          // target도 같이 이동
+          controlsRef.current.target.add(move);
+          controlsRef.current.update();
         }
         lastDistance.current = distance;
       }
