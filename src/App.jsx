@@ -12,7 +12,13 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
   const prevMouse = useRef([0, 0]);
   const prevTouch = useRef([0, 0]);
   const lastDistance = useRef(null);
+  const lastCenter = useRef(null);
   const touchMode = useRef(null);
+
+  const getCenter = ([t1, t2]) => {
+    (t1.clientX + t2.clientY) / 2,
+    (t1.clientY + t2.clientY) / 2 
+  };
 
   const getDistance = ([t1, t2]) => {
     const dx = t1.clientX - t2.clientX;
@@ -31,6 +37,7 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
       if (e.touches.length === 2) {
         touchMode.current = 'zoom'; // 🔥 추가
         lastDistance.current = getDistance(e.touches);
+        lastCenter.current = getCenter(e.touches);
       }
     };
 
@@ -64,7 +71,14 @@ function XrModel({ controlsRef, setSelectedName, selectedMesh, setSelectedMesh, 
         if(lastDistance.current !== null){
           const delta = distance - lastDistance.current;
 
-          // if(Math.abs(delta) < 2) return;
+          const moveX = center[0] - lastCenter.current[0];
+          const moveY = center[1] - lastCenter.current[1];
+
+          if(Math.abs(delta) < 2){
+            lastCenter.current = center;
+            lastDistance.current = distance;
+            return;
+          }
 
           const minDistance = 2;
           const maxDistance = 10;
